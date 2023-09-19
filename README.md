@@ -69,15 +69,16 @@ idf.py create-component rust_component
 In your `rust_component` directory, create a `CMakeLists.txt` file with the following content:
 
 ```cmake
-# Basic component registration
 idf_component_register(
     SRCS "src/esp_rust_wrapper.c"
     INCLUDE_DIRS "include"
 )
 
-# Define the Rust target for the Xtensa architecture
+# Define the Rust target for the Xtensa and RISC-V architecture
 if (CONFIG_IDF_TARGET_ARCH_XTENSA)
     set(Rust_CARGO_TARGET "xtensa-${IDF_TARGET}-none-elf")
+elseif (CONFIG_IDF_TARGET_ARCH_RISCV)
+    set(Rust_CARGO_TARGET "riscv32imac-unknown-none-elf")
 else()
     message(FATAL_ERROR "Architecture currently not supported")
 endif()
