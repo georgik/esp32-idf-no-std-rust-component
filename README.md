@@ -76,9 +76,9 @@ idf_component_register(
 
 # Define the Rust target for the Xtensa and RISC-V architecture
 if (CONFIG_IDF_TARGET_ARCH_XTENSA)
-    set(Rust_CARGO_TARGET "xtensa-${IDF_TARGET}-none-elf")
+    set(RUST_CARGO_TARGET "xtensa-${IDF_TARGET}-none-elf")
 elseif (CONFIG_IDF_TARGET_ARCH_RISCV)
-    set(Rust_CARGO_TARGET "riscv32imac-unknown-none-elf")
+    set(RUST_CARGO_TARGET "riscv32imac-unknown-none-elf")
 else()
     message(FATAL_ERROR "Architecture currently not supported")
 endif()
@@ -90,7 +90,7 @@ set(CARGO_BUILD_FLAGS "-Zbuild-std=core")
 set(RUST_PROJECT_DIR "${CMAKE_CURRENT_LIST_DIR}/rust_crate")
 set(RUST_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 set(RUST_TARGET_DIR "${RUST_BUILD_DIR}/target")
-set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${Rust_CARGO_TARGET}/release/librust_crate.a")
+set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${RUST_CARGO_TARGET}/release/librust_crate.a")
 
 # ExternalProject_Add for building the Rust project
 ExternalProject_Add(
@@ -99,7 +99,7 @@ ExternalProject_Add(
     DOWNLOAD_COMMAND ""
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ${CMAKE_COMMAND} -E env
-        CARGO_BUILD_TARGET=${Rust_CARGO_TARGET}
+        CARGO_BUILD_TARGET=${RUST_CARGO_TARGET}
         CARGO_BUILD_TARGET_DIR=${RUST_TARGET_DIR}
         cargo build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics
     BUILD_ALWAYS TRUE
