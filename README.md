@@ -23,7 +23,7 @@ esp_idf_project/
 |       |-- include/
 |           |-- esp_rust_component.h
 |       |-- src/
-|           |-- wrapper.c
+|           |-- esp_rust_wrapper.c
 |       |-- rust_crate/
 |           |-- Cargo.toml
 |           |-- src/
@@ -32,10 +32,11 @@ esp_idf_project/
 
 ### Architecture
 
-ESP-IDF project contains main C code like any other ESP-IDF application.
-The ESP-IDF componet with name esp_rust_component is stored in subdirectory with components.
-The component contains C adapter layer which helps interfacing with Rust crate.
-The Rust code is then stored in `components/esp_rust_component/rust_crate` subdirectory.
+Key elements:
+- `esp_idf_project` contains main C code like any other ESP-IDF application.
+- The ESP-IDF componet with name `esp_rust_component` is stored in subdirectory with components. The component contains C adapter layer which helps interfacing with Rust crate.
+- The Rust code is then stored in `components/esp_rust_component/rust_crate` subdirectory.
+
 The component can be uploaded later on to [Component Manager](https://components.espressif.com/).
 
 ## Step-by-Step Guide
@@ -55,6 +56,7 @@ Create a new directory in your `components/` folder. You can name it `rust_compo
 
 ```
 mkdir components
+cd components
 idf.py create-component rust_component
 ```
 
@@ -63,10 +65,9 @@ idf.py create-component rust_component
 In your `rust_component` directory, create a `CMakeLists.txt` file with the following content:
 
 ```cmake
-# CMakeLists.txt
 # Basic component registration
 idf_component_register(
-    SRCS "src/wrapper.c"
+    SRCS "src/esp_rust_wrapper.c"
     INCLUDE_DIRS "include"
 )
 
@@ -118,7 +119,7 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC rust_hello_lib)
 
 ### Create a Rust Project Inside the Component
 
-Create a new folder inside `rust_component` called `rust_crate`. Then initialize a new Rust library:
+Create a new Rust crate inside `rust_component` called `rust_crate`. Then initialize a new Rust library:
 
 ```bash
 cargo init --lib rust_crate
@@ -127,7 +128,6 @@ cargo init --lib rust_crate
 Update the `Cargo.toml` to match the settings for your ESP32 board. Also set the crate type to `staticlib`:
 
 ```toml
-# Cargo.toml
 [package]
 name = "rust_crate"
 version = "0.1.0"
@@ -147,7 +147,7 @@ default = [ ]
 Add a Rust function with C linkage in your `lib.rs` that will be callable from C code. An example might be:
 
 ```rust
-static HELLO_ESP32: &'static [u8] = b"Hello Spooky\0";
+static HELLO_ESP32: &'static [u8] = b"Hello ESP-RS\0";
 
 #[no_mangle]
 pub extern "C" fn hello() -> *const c_void {
@@ -157,25 +157,60 @@ pub extern "C" fn hello() -> *const c_void {
 
 ### Create a C Wrapper
 
-Create a `wrapper.c` file in the `src/` directory inside `rust_crate` to include the Rust functions.
+Create file `rust_component/src/esp_rust_wrapper.c` to include the Rust functions.
 
 ```c
 #include "rust_component.h"
-
-// call Rust functions here
 ```
 
 ### Update the Header File
 
-Include the C header file in your `include/rust_component.h`:
+Include the C header file in your `rust_component/include/rust_component.h`:
 
 ```c
 extern const void* hello();
 ```
 
-### Configure the ESP-IDF Project
+### Select target
 
-Update the top-level `CMakeLists.txt` file in your ESP-IDF project to include the new component.
+#### Targets: ESP32, ESP32-S2, ESP32-S3
+
+This chapter applies to chips with Xtensa architecture.
+
+Define which toolchain should be used for the Rust component in file `rust_component/rust-toolchain.toml`
+
+```toml
+[toolchain]
+channel = "esp"
+```
+
+Set target for main ESP-IDF application:
+
+```bash
+idf.py set-target esp32
+# idf.py set-target esp32-s2
+# idf.py set-target esp32-s3
+```
+
+#### Targets ESP32-C*, ESP32-H*
+
+This chapter applies to chips with RISC-V architecture
+
+Define which toolchain should be used for the Rust component in file `rust_component/rust-toolchain.toml`
+
+```toml
+[toolchain]
+channel = "nightly"
+```
+
+Set target for main ESP-IDF application:
+
+```bash
+idf.py set-target esp32-c3
+# idf.py set-target esp32-h2
+# idf.py set-target esp32-c6
+```
+
 
 ### Build the Project
 
