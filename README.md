@@ -16,6 +16,9 @@ Here's how your project directory might look after the setup:
 ```
 esp_idf_project/
 |-- CMakeLists.txt
+|-- main/
+|   |-- CMakeLists.txt
+|   |-- esp_idf_project.c
 |-- sdkconfig
 |-- components/
 |   |-- esp_rust_component/
@@ -26,6 +29,7 @@ esp_idf_project/
 |           |-- esp_rust_wrapper.c
 |       |-- rust_crate/
 |           |-- Cargo.toml
+|           |-- rust-toolchain.toml
 |           |-- src/
 |               |-- lib.rs
 ```
@@ -82,14 +86,14 @@ endif()
 set(CARGO_BUILD_FLAGS "-Zbuild-std=core")
 
 # Set directories and target
-set(RUST_PROJECT_DIR "${CMAKE_CURRENT_LIST_DIR}/rust_hello")
+set(RUST_PROJECT_DIR "${CMAKE_CURRENT_LIST_DIR}/rust_crate")
 set(RUST_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 set(RUST_TARGET_DIR "${RUST_BUILD_DIR}/target")
-set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${Rust_CARGO_TARGET}/release/librust_hello.a")
+set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${Rust_CARGO_TARGET}/release/librust_crate.a")
 
 # ExternalProject_Add for building the Rust project
 ExternalProject_Add(
-    rust_hello_target
+    rust_crate_target
     PREFIX "${RUST_PROJECT_DIR}"
     DOWNLOAD_COMMAND ""
     CONFIGURE_COMMAND ""
@@ -110,11 +114,11 @@ ExternalProject_Add(
 )
 
 # Add prebuilt Rust library
-add_prebuilt_library(rust_hello_lib "${RUST_STATIC_LIBRARY}" REQUIRES "")
+add_prebuilt_library(rust_crate_lib "${RUST_STATIC_LIBRARY}" REQUIRES "")
 
 # Add dependencies and link Rust library
-add_dependencies(${COMPONENT_LIB} rust_hello_target)
-target_link_libraries(${COMPONENT_LIB} PUBLIC rust_hello_lib)
+add_dependencies(${COMPONENT_LIB} rust_crate_target)
+target_link_libraries(${COMPONENT_LIB} PUBLIC rust_crate_lib)
 ```
 
 ### Create a Rust Project Inside the Component
@@ -147,7 +151,18 @@ default = [ ]
 Add a Rust function with C linkage in your `lib.rs` that will be callable from C code. An example might be:
 
 ```rust
-static HELLO_ESP32: &'static [u8] = b"Hello ESP-RS\0";
+![cfg_attr(not(feature = "std"), no_std)]
+
+use core::ffi::c_void;
+use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {
+    }
+}
+
+static HELLO_ESP32: &'static [u8] = b"Hello ESP-RS. https://github.com/esp-rs\0";
 
 #[no_mangle]
 pub extern "C" fn hello() -> *const c_void {
@@ -171,13 +186,27 @@ Include the C header file in your `rust_component/include/rust_component.h`:
 extern const void* hello();
 ```
 
+### Call Rust code from C
+
+Update main ESP-IDF project file `main/esp_idf_project.c`:
+
+```c
+#include "stdio.h"
+#include "rust_component.h"
+
+void app_main() {
+    const char* message = hello();
+    printf("%s\n", message);
+}
+```
+
 ### Select target
 
 #### Targets: ESP32, ESP32-S2, ESP32-S3
 
 This chapter applies to chips with Xtensa architecture.
 
-Define which toolchain should be used for the Rust component in file `rust_component/rust-toolchain.toml`
+Define which toolchain should be used for the Rust component in file `rust_component/rust_crate/rust-toolchain.toml`
 
 ```toml
 [toolchain]
@@ -217,7 +246,7 @@ idf.py set-target esp32-c3
 Run the build process as you usually would for an ESP-IDF project:
 
 ```bash
-idf.py build
+idf.py build flash monitor
 ```
 
 ## Troubleshooting
