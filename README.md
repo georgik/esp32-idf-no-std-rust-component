@@ -152,7 +152,7 @@ default = [ ]
 Add a Rust function with C linkage in your `lib.rs` that will be callable from C code. An example might be:
 
 ```rust
-![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 use core::ffi::c_void;
 use core::panic::PanicInfo;
