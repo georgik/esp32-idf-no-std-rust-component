@@ -1,6 +1,6 @@
 # Integrating a Rust Component into an ESP-IDF Project
 
-ESP-IDF, the official development framework for the ESP32 Series SoCs, supports integration of components written in C/C++. However, Rust is gaining traction for embedded development due to its safety features. This article outlines the steps to add a Rust component to your ESP-IDF project.
+ESP-IDF, the official development framework for the ESP32 Series SoCs, supports integration of components written in C/C++ and Rust which is gaining traction for embedded development due to its safety features. This article outlines the steps to add a Rust component to your ESP-IDF project.
 
 ## Prerequisites
 
@@ -14,29 +14,51 @@ ESP-IDF, the official development framework for the ESP32 Series SoCs, supports 
 Here's how your project directory might look after the setup:
 
 ```
-my_esp_app/
+esp_idf_project/
 |-- CMakeLists.txt
 |-- sdkconfig
 |-- components/
-|   |-- rust_component/
+|   |-- esp_rust_component/
 |       |-- CMakeLists.txt
 |       |-- include/
-|           |-- rust_component.h
+|           |-- esp_rust_component.h
 |       |-- src/
 |           |-- wrapper.c
-|       |-- rust_hello/
+|       |-- rust_crate/
 |           |-- Cargo.toml
 |           |-- src/
 |               |-- lib.rs
 ```
 
+### Architecture
+
+ESP-IDF project contains main C code like any other ESP-IDF application.
+The ESP-IDF componet with name esp_rust_component is stored in subdirectory with components.
+The component contains C adapter layer which helps interfacing with Rust crate.
+The Rust code is then stored in `components/esp_rust_component/rust_crate` subdirectory.
+The component can be uploaded later on to [Component Manager](https://components.espressif.com/).
+
 ## Step-by-Step Guide
 
-### 1. Create the ESP-IDF Component
+### Create ESP-IDF project
+
+Use ESP-IDF tooling to create new project with name `esp_idf_project`.
+
+```
+idf.py create-project esp_idf_project
+cd esp_idf_project
+```
+
+### Create the ESP-IDF Component
 
 Create a new directory in your `components/` folder. You can name it `rust_component`.
 
-### 2. Set up the CMakeLists.txt File
+```
+mkdir components
+idf.py create-component rust_component
+```
+
+### Set up the CMakeLists.txt File
 
 In your `rust_component` directory, create a `CMakeLists.txt` file with the following content:
 
@@ -94,12 +116,12 @@ add_dependencies(${COMPONENT_LIB} rust_hello_target)
 target_link_libraries(${COMPONENT_LIB} PUBLIC rust_hello_lib)
 ```
 
-### 3. Create a Rust Project Inside the Component
+### Create a Rust Project Inside the Component
 
-Create a new folder inside `rust_component` called `rust_hello`. Then initialize a new Rust library:
+Create a new folder inside `rust_component` called `rust_crate`. Then initialize a new Rust library:
 
 ```bash
-$ cargo init --lib rust_hello
+cargo init --lib rust_crate
 ```
 
 Update the `Cargo.toml` to match the settings for your ESP32 board. Also set the crate type to `staticlib`:
@@ -107,11 +129,9 @@ Update the `Cargo.toml` to match the settings for your ESP32 board. Also set the
 ```toml
 # Cargo.toml
 [package]
-name = "rust_hello"
+name = "rust_crate"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 crate-type = ["staticlib"]
@@ -122,7 +142,7 @@ crate-type = ["staticlib"]
 default = [ ]
 ```
 
-### 4. Rust to C Interoperability
+### Rust to C Interoperability
 
 Add a Rust function with C linkage in your `lib.rs` that will be callable from C code. An example might be:
 
@@ -135,9 +155,9 @@ pub extern "C" fn hello() -> *const c_void {
 }
 ```
 
-### 5. Create a C Wrapper
+### Create a C Wrapper
 
-Create a `wrapper.c` file in the `src/` directory inside `rust_component` to include the Rust functions.
+Create a `wrapper.c` file in the `src/` directory inside `rust_crate` to include the Rust functions.
 
 ```c
 #include "rust_component.h"
@@ -145,25 +165,24 @@ Create a `wrapper.c` file in the `src/` directory inside `rust_component` to inc
 // call Rust functions here
 ```
 
-### 6. Update the Header File
+### Update the Header File
 
-Include the C header file in your `include/` directory:
+Include the C header file in your `include/rust_component.h`:
 
 ```c
-// rust_component.h
 extern const void* hello();
 ```
 
-### 7. Configure the ESP-IDF Project
+### Configure the ESP-IDF Project
 
 Update the top-level `CMakeLists.txt` file in your ESP-IDF project to include the new component.
 
-### 8. Build the Project
+### Build the Project
 
 Run the build process as you usually would for an ESP-IDF project:
 
 ```bash
-$ idf.py build
+idf.py build
 ```
 
 ## Troubleshooting
