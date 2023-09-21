@@ -4,14 +4,14 @@ ESP-IDF, the official development framework for the ESP32 Series SoCs, supports 
 
 ## Prerequisites
 
-- Installed ESP-IDF
-- Installed Rust and Cargo
-- Installed xtensa LLVM toolchain for Rust
+- [Installed ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation)
+- [Installed Rust and Cargo](https://www.rust-lang.org/tools/install)
+- [Installed Xtensa LLVM toolchain for Rust](https://esp-rs.github.io/book/installation/index.html)
 - Basic knowledge of ESP-IDF, CMake, and Rust
 
 ## Structure
 
-Here's how your project directory might look after the setup:
+Here's how your project directory might look after the following the guide:
 
 ```
 esp_idf_project/
@@ -38,12 +38,17 @@ esp_idf_project/
 
 Key elements:
 - `esp_idf_project` contains main C code like any other ESP-IDF application.
-- The ESP-IDF componet with name `esp_rust_component` is stored in subdirectory with components. The component contains C adapter layer which helps interfacing with Rust crate.
-- The Rust code is then stored in `components/esp_rust_component/rust_crate` subdirectory.
+- The ESP-IDF componet with name `esp_rust_component` is stored in subdirectory with components.
+  - The `esp_rust_component` component contains C adapter layer which helps interfacing with Rust library.
+- The Rust code is stored in `components/esp_rust_component/rust_crate` subdirectory.
 
 The component can be uploaded later on to [Component Manager](https://components.espressif.com/).
 
 ## Step-by-Step Guide
+
+### Set-up the environment
+
+Before starting the project, make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
 
 ### Create ESP-IDF project
 
@@ -66,7 +71,7 @@ idf.py create-component rust_component
 
 ### Set up the CMakeLists.txt File
 
-In your `rust_component` directory, create a `CMakeLists.txt` file with the following content:
+In your `rust_component` directory, edit the `CMakeLists.txt` file with the following content:
 
 ```cmake
 idf_component_register(
@@ -123,14 +128,14 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC rust_crate_lib)
 ```
 
 ### Create a Rust Project Inside the Component
-
-Create a new Rust crate inside `rust_component` called `rust_crate`. Then initialize a new Rust library:
+<!-- The phrase looks like there are two steps -->
+Create a new Rust crate, which will be a library, inside `rust_component` called `rust_crate`:
 
 ```bash
 cargo init --lib rust_crate
 ```
 
-Update the `Cargo.toml` to match the settings for your ESP32 board. Also set the crate type to `staticlib`:
+Update the `Cargo.toml` to match the settings for your target board. Also set the crate type to `staticlib`:
 
 ```toml
 [package]
@@ -203,52 +208,31 @@ void app_main() {
 
 ### Select target
 
-#### Targets: ESP32, ESP32-S2, ESP32-S3
-
-This chapter applies to chips with Xtensa architecture.
-
 Define which toolchain should be used for the Rust component in file `rust_component/rust_crate/rust-toolchain.toml`
 
 ```toml
 [toolchain]
+# Use "esp" for ESP32, ESP32S2, and ESP32S3
 channel = "esp"
+# Use "nightly" for ESP32-C*, ESP32-H* targets
+# channel = "nightly"
+
 ```
 
 Set target for main ESP-IDF application:
 
 ```bash
-idf.py set-target esp32
-# idf.py set-target esp32-s2
-# idf.py set-target esp32-s3
+idf.py set-target <target>
 ```
-
-#### Targets ESP32-C*, ESP32-H*
-
-This chapter applies to chips with RISC-V architecture
-
-Define which toolchain should be used for the Rust component in file `rust_component/rust-toolchain.toml`
-
-```toml
-[toolchain]
-channel = "nightly"
-```
-
-Set target for main ESP-IDF application:
-
-```bash
-idf.py set-target esp32-c3
-# idf.py set-target esp32-h2
-# idf.py set-target esp32-c6
-```
-
 
 ### Build the Project
-
-Run the build process as you usually would for an ESP-IDF project:
+From the base folder of the project (`esp_idf_project`), run the build process as you usually would for an ESP-IDF project:
 
 ```bash
 idf.py build flash monitor
 ```
+
+This command will build, flash the resulting binary to your board and open a serial monitor.
 
 ## Troubleshooting
 
