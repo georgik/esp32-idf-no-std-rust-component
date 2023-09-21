@@ -128,7 +128,7 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC rust_crate_lib)
 ```
 
 ### Create a Rust Project Inside the Component
-<!-- The phrase looks like there are two steps -->
+
 Create a new Rust crate, which will be a library, inside `rust_component` called `rust_crate`:
 
 ```bash
@@ -208,6 +208,16 @@ void app_main() {
 
 ### Select target
 
+Set target for main ESP-IDF application:
+
+```bash
+idf.py set-target <target>
+# idf.py set-target esp32
+# idf.py set-target esp32-c3
+# idf.pu set-target esp32-s3
+```
+
+Optional step when developers needs to build Rust component also manually:
 Define which toolchain should be used for the Rust component in file `rust_component/rust_crate/rust-toolchain.toml`
 
 ```toml
@@ -219,11 +229,6 @@ channel = "esp"
 
 ```
 
-Set target for main ESP-IDF application:
-
-```bash
-idf.py set-target <target>
-```
 
 ### Build the Project
 From the base folder of the project (`esp_idf_project`), run the build process as you usually would for an ESP-IDF project:
