@@ -70,7 +70,7 @@ idf.py create-component esp_rust_component
 
 ### Set up the CMakeLists.txt File
 
-In your `esp_rust_component` directory, edit the `CMakeLists.txt` file with the following content:
+In your `esp_rust_component` directory, edit the [`CMakeLists.txt`](./components/esp_rust_component/CMakeLists.txt) file with the following content:
 
 ```cmake
 idf_component_register(
@@ -80,8 +80,10 @@ idf_component_register(
 
 # Define the Rust target for the Xtensa and RISC-V architecture
 if (CONFIG_IDF_TARGET_ARCH_XTENSA)
+    set(RUST_CARGO_TOOLCHAIN "+esp")
     set(RUST_CARGO_TARGET "xtensa-${IDF_TARGET}-none-elf")
 elseif (CONFIG_IDF_TARGET_ARCH_RISCV)
+    set(RUST_CARGO_TOOLCHAIN "+nightly")
     set(RUST_CARGO_TARGET "riscv32imac-unknown-none-elf")
 else()
     message(FATAL_ERROR "Architecture currently not supported")
@@ -105,7 +107,7 @@ ExternalProject_Add(
     BUILD_COMMAND ${CMAKE_COMMAND} -E env
         CARGO_BUILD_TARGET=${RUST_CARGO_TARGET}
         CARGO_BUILD_TARGET_DIR=${RUST_TARGET_DIR}
-        cargo build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics
+        cargo ${RUST_CARGO_TOOLCHAIN} build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics
     BUILD_ALWAYS TRUE
     INSTALL_COMMAND ""
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
