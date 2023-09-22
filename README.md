@@ -244,6 +244,40 @@ This command will build, flash the resulting binary to your board and open a ser
 
 - If you encounter linker errors, you may need to update your Rust flags. For example, you might need to add the `-Zbuild-std-features=compiler-builtins-weak-intrinsics` flag to `CARGO_BUILD_FLAGS` in your `CMakeLists.txt`.
 
----
+## Simulation
 
-That's it! You have successfully added a Rust component to your ESP-IDF project. Now you can leverage the safety and robustness of Rust while taking advantage of ESP-IDF's features.
+### Simulation with Wokwi in VS Code
+
+- Install VS Code
+- Install Wokwi plugin
+- Activate Wokwi plugin - command palette, search for `Wokwi: Start Simulator`, select and ativate the plugin using web browser
+
+### Add files for Wokwi simulator
+
+Create [`wokwi.toml`](./wokwi.toml) in the root of the project. The file contains references to BIN and ELF previously built by `idf.py`.
+
+```toml
+[wokwi]
+version = 1
+elf = "build/esp_idf_project.elf"
+firmware = "build/esp_idf_project.bin"
+```
+
+Create [`diagram.json`](./diagram.json). The file contains board selected for the simulation.
+
+```json
+{
+  "version": 1,
+  "author": "Espressif Systems",
+  "editor": "wokwi",
+  "parts": [ { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} } ],
+  "connections": [ [ "esp:TX0", "$serialMonitor:RX", "", [] ], [ "esp:RX0", "$serialMonitor:TX", "", [] ] ],
+  "dependencies": {}
+}
+```
+
+Open VS Code, open command palette (CMD/Ctrl+Shift+P), search for `Wokwi: Start Simulator`, select the option to start simulation.
+
+Use Pause button to display state of pins.
+
+The plugin auto-reload application if the binary was updated.

@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+elf = "build/esp_idf_project.elf"
+firmware = "build/esp_idf_project.bin"
