@@ -215,7 +215,7 @@ Set target for main ESP-IDF application:
 idf.py set-target <target>
 # idf.py set-target esp32
 # idf.py set-target esp32-c3
-# idf.pu set-target esp32-s3
+# idf.py set-target esp32-s3
 ```
 
 Optional step when developers needs to build Rust component also manually:
@@ -223,7 +223,7 @@ Define which toolchain should be used for the Rust component in file `esp_rust_c
 
 ```toml
 [toolchain]
-# Use "esp" for ESP32, ESP32S2, and ESP32S3
+# Use "esp" for ESP32, ESP32-S2, and ESP32-S3
 channel = "esp"
 # Use "nightly" for ESP32-C*, ESP32-H* targets
 # channel = "nightly"
