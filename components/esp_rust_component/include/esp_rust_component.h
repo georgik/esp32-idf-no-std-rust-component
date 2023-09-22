@@ -1,0 +1,2 @@
+extern const void* hello();
+

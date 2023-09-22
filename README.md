@@ -25,8 +25,7 @@ esp_idf_project/
 |       |-- CMakeLists.txt
 |       |-- include/
 |           |-- esp_rust_component.h
-|       |-- src/
-|           |-- esp_rust_wrapper.c
+|       |-- esp_rust_component.c
 |       |-- rust_crate/
 |           |-- Cargo.toml
 |           |-- rust-toolchain.toml
@@ -61,28 +60,30 @@ cd esp_idf_project
 
 ### Create the ESP-IDF Component
 
-Create a new directory in your `components/` folder. You can name it `rust_component`.
+Create a new directory in your `components/` folder. You can name it `esp_rust_component`.
 
 ```
 mkdir components
 cd components
-idf.py create-component rust_component
+idf.py create-component esp_rust_component
 ```
 
 ### Set up the CMakeLists.txt File
 
-In your `rust_component` directory, edit the `CMakeLists.txt` file with the following content:
+In your `esp_rust_component` directory, edit the [`CMakeLists.txt`](./components/esp_rust_component/CMakeLists.txt) file with the following content:
 
 ```cmake
 idf_component_register(
-    SRCS "src/esp_rust_wrapper.c"
+    SRCS "esp_rust_component.c"
     INCLUDE_DIRS "include"
 )
 
 # Define the Rust target for the Xtensa and RISC-V architecture
 if (CONFIG_IDF_TARGET_ARCH_XTENSA)
+    set(RUST_CARGO_TOOLCHAIN "+esp")
     set(RUST_CARGO_TARGET "xtensa-${IDF_TARGET}-none-elf")
 elseif (CONFIG_IDF_TARGET_ARCH_RISCV)
+    set(RUST_CARGO_TOOLCHAIN "+nightly")
     set(RUST_CARGO_TARGET "riscv32imac-unknown-none-elf")
 else()
     message(FATAL_ERROR "Architecture currently not supported")
@@ -106,7 +107,7 @@ ExternalProject_Add(
     BUILD_COMMAND ${CMAKE_COMMAND} -E env
         CARGO_BUILD_TARGET=${RUST_CARGO_TARGET}
         CARGO_BUILD_TARGET_DIR=${RUST_TARGET_DIR}
-        cargo build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics
+        cargo ${RUST_CARGO_TOOLCHAIN} build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics
     BUILD_ALWAYS TRUE
     INSTALL_COMMAND ""
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
@@ -129,13 +130,13 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC rust_crate_lib)
 
 ### Create a Rust Project Inside the Component
 
-Create a new Rust crate, which will be a library, inside `rust_component` called `rust_crate`:
+Create a new Rust crate, which will be a library, inside `esp_rust_component` called `rust_crate`:
 
 ```bash
 cargo init --lib rust_crate
 ```
 
-Update the `Cargo.toml` to match the settings for your target board. Also set the crate type to `staticlib`:
+Update the [`Cargo.toml`](./components/esp_rust_component/rust_crate/Cargo.toml) to match the settings for your target board. Also set the crate type to `staticlib`:
 
 ```toml
 [package]
@@ -154,7 +155,7 @@ default = [ ]
 
 ### Rust to C Interoperability
 
-Add a Rust function with C linkage in your `lib.rs` that will be callable from C code. An example might be:
+Add a Rust function with C linkage in your [`lib.rs`](./components/esp_rust_component/rust_crate/src/lib.rs) that will be callable from C code. An example might be:
 
 ```rust
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -178,7 +179,7 @@ pub extern "C" fn hello() -> *const c_void {
 
 ### Create a C Wrapper
 
-Create file `rust_component/src/esp_rust_wrapper.c` to include the Rust functions.
+Create file [`esp_rust_component/esp_rust_component.c`](./components/esp_rust_component/esp_rust_component.c) to include the Rust functions.
 
 ```c
 #include "rust_component.h"
@@ -186,7 +187,7 @@ Create file `rust_component/src/esp_rust_wrapper.c` to include the Rust function
 
 ### Update the Header File
 
-Include the C header file in your `rust_component/include/rust_component.h`:
+Include the C header file in your [`esp_rust_component/include/esp_rust_component.h`](./components/esp_rust_component/include/esp_rust_component.h):
 
 ```c
 extern const void* hello();
@@ -194,11 +195,11 @@ extern const void* hello();
 
 ### Call Rust code from C
 
-Update main ESP-IDF project file `main/esp_idf_project.c`:
+Update main ESP-IDF project file [`main/esp_idf_project.c`](./main/esp_idf_project.c):
 
 ```c
 #include "stdio.h"
-#include "rust_component.h"
+#include "esp_rust_component.h"
 
 void app_main() {
     const char* message = hello();
@@ -218,7 +219,7 @@ idf.py set-target <target>
 ```
 
 Optional step when developers needs to build Rust component also manually:
-Define which toolchain should be used for the Rust component in file `rust_component/rust_crate/rust-toolchain.toml`
+Define which toolchain should be used for the Rust component in file `esp_rust_component/rust_crate/rust-toolchain.toml`
 
 ```toml
 [toolchain]
