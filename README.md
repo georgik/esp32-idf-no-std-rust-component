@@ -283,3 +283,18 @@ Open VS Code, open command palette (CMD/Ctrl+Shift+P), search for `Wokwi: Start 
 Use Pause button to display state of pins.
 
 The plugin auto-reload application if the binary was updated.
+
+## Using `cargo-generate`
+
+If you prefer starting the project from a template, you can use [cargo-generate](https://github.com/cargo-generate/cargo-generate) to get the project ready to build and flash!
+
+###  Prerequisites
+
+- Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+- Install `cargo-generate`: `cargo install cargo-generate`
+
+### Instructions
+
+1. Generate the template `cargo generate georgik/esp32-idf-no-std-rust-component`
+2. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
+3. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
