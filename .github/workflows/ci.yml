@@ -24,37 +24,64 @@ concurrency:
 
 jobs:
   build-check:
-    name: ${{ matrix.board }}
+    name: ${{ matrix.board.mcu }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        board: ["esp32", "esp32c2", "esp32c3", "esp32c6", "esp32h2", "esp32s2", "esp32s3"]
+        board:
+          - mcu: "esp32"
+            devkit: "board-esp32-devkit-v1"
+          - mcu: "esp32c2"
+          - mcu: "esp32c3"
+            devkit: "board-esp32-c3-devkitm-1"
+          - mcu: "esp32c6"
+            devkit: "board-esp32-c6-devkitc-1"
+          - mcu: "esp32h2"
+            devkit: "board-esp32-h2-devkitm-1"
+          - mcu: "esp32s2"
+            devkit: "board-esp32-s2-devkitm-1"
+          - mcu: "esp32s3"
+            devkit: "board-esp32-s3-devkitc-1"
     steps:
       - uses: actions/checkout@v4
       - name: Setup | Rust (RISC-V)
-        if: matrix.board != 'esp32' && matrix.board != 'esp32-2' && matrix.board != 'esp32s3'
+        if: matrix.board.mcu != 'esp32' && matrix.board.mcu != 'esp32s2' && matrix.board.mcu != 'esp32s3'
         uses: dtolnay/rust-toolchain@v1
         with:
           target: riscv32imc-unknown-none-elf
           toolchain: nightly
           components: rust-src
       - name: Setup | Rust (Xtensa)
-        if: matrix.board == 'esp32' || matrix.board == 'esp32s2' || matrix.board == 'esp32s3'
+        if: matrix.board.mcu == 'esp32' || matrix.board.mcu == 'esp32s2' || matrix.board.mcu == 'esp32s3'
         uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
-          buildtargets: ${{ matrix.board }}
+          buildtargets: ${{ matrix.board.mcu }}
           ldproxy: false
       - uses: Swatinem/rust-cache@v2
       - name: Setup | ESP-IDF
         shell: bash
         run: |
           git clone -b v5.1 --shallow-submodules --single-branch --recursive https://github.com/espressif/esp-idf.git /home/runner/work/esp-idf
-          /home/runner/work/esp-idf/install.sh ${{ matrix.board }}
+          /home/runner/work/esp-idf/install.sh ${{ matrix.board.mcu }}
       - name: Build project
         shell: bash
         run: |
           . /home/runner/work/esp-idf/export.sh
-          idf.py set-target ${{ matrix.board }}
+          idf.py set-target ${{ matrix.board.mcu }}
           idf.py build
+      - name: Setup | Wokwi diagram
+        if: matrix.board.devkit != '' && matrix.board.mcu != 'esp32'
+        run: |
+          sed -i 's/board-esp32-devkit-v1/${{ matrix.board.devkit }}/g' diagram.json
+          sed -i 's/esp:TX0/esp:TX/g' diagram.json
+          sed -i 's/esp:RX0/esp:RX/g' diagram.json
+      - name: Wokwi CI check
+        if: matrix.board.devkit != ''
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          timeout: 10000
+          expect_text: 'Hello ESP-RS. https://github.com/esp-rs'
+          fail_text: 'Error'
