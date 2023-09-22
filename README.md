@@ -284,17 +284,37 @@ Use Pause button to display state of pins.
 
 The plugin auto-reload application if the binary was updated.
 
-## Using `cargo-generate`
+## Using this repository as template
 
-If you prefer starting the project from a template, you can use [cargo-generate](https://github.com/cargo-generate/cargo-generate) to get the project ready to build and flash!
+If you prefer starting the project from a template, you can use different methods:
+- `git`: Simply clone the repository and avoid generating and populating the different files
+- [cargo-generate](https://github.com/cargo-generate/cargo-generate) to get the project ready to build and flash!
+- [GitHub tempaltes](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
 
-###  Prerequisites
+### `git`
 
-- Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
-- Install `cargo-generate`: `cargo install cargo-generate`
+1. Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+2. Clone the repository: `git clone https://github.com/georgik/esp32-idf-no-std-rust-component`
+3. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
+4. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
 
-### Instructions
 
-1. Generate the template `cargo generate georgik/esp32-idf-no-std-rust-component`
-2. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
-3. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
+### `cargo-generate`
+
+1. Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+2. Install `cargo-generate`: `cargo install cargo-generate`
+3. Generate the template `cargo generate georgik/esp32-idf-no-std-rust-component`
+4. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
+5. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
+
+### GitHub templates
+
+1. Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+2. [Create your own repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template#creating-a-repository-from-a-template) from [`georgik/esp32-idf-no-std-rust-component`](https://github.com/georgik/esp32-idf-no-std-rust-component)
+   1. Above the file list, click Use this template.
+   2. Select Create a new repository.
+   3. Fill the required information
+   4. Create the repository
+3. Clone the repository that you just created: `git clone https://github.com/<owner>/<repository>`
+4. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
+5. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
