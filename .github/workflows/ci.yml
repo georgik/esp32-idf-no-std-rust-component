@@ -1,0 +1,60 @@
+name: CI
+on:
+  push:
+    paths-ignore:
+      - "**/README.md"
+  pull_request:
+    paths-ignore:
+      - "**/README.md"
+  schedule:
+    - cron: "50 7 * * *"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Cancel any currently running workflows from the same PR, branch, or
+# tag when a new workflow is triggered.
+#
+# https://stackoverflow.com/a/66336834
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  build-check:
+    name: ${{ matrix.board }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board: ["esp32", "esp32c2", "esp32c3", "esp32c6", "esp32h2", "esp32s2", "esp32s3"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup | Rust (RISC-V)
+        if: matrix.board != 'esp32' && matrix.board != 'esp32-2' && matrix.board != 'esp32s3'
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imc-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+      - name: Setup | Rust (Xtensa)
+        if: matrix.board == 'esp32' || matrix.board == 'esp32s2' || matrix.board == 'esp32s3'
+        uses: esp-rs/xtensa-toolchain@v1.5
+        with:
+          default: true
+          buildtargets: ${{ matrix.board }}
+          ldproxy: false
+      - uses: Swatinem/rust-cache@v2
+      - name: Setup | ESP-IDF
+        shell: bash
+        run: |
+          git clone -b v5.1 --shallow-submodules --single-branch --recursive https://github.com/espressif/esp-idf.git /home/runner/work/esp-idf
+          /home/runner/work/esp-idf/install.sh ${{ matrix.board }}
+      - name: Build project
+        shell: bash
+        run: |
+          . /home/runner/work/esp-idf/export.sh
+          idf.py set-target ${{ matrix.board }}
+          idf.py build
