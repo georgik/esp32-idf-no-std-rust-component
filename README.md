@@ -248,8 +248,10 @@ This command will build, flash the resulting binary to your board and open a ser
 
 ### Simulation with Wokwi in VS Code
 
-- Install VS Code
-- Install Wokwi plugin
+[Wokwi for Visual Studio Code](https://docs.wokwi.com/vscode/getting-started) provides a simulation solution for embedded and IoT system engineers. The extension integrates with your existing development environment, allowing you to simulate your projects directly from your code editor.
+
+- [Install VS Code](https://code.visualstudio.com/download)
+- [Install Wokwi plugin](https://docs.wokwi.com/vscode/getting-started#installation)
 - Activate Wokwi plugin - command palette, search for `Wokwi: Start Simulator`, select and ativate the plugin using web browser
 
 ### Add files for Wokwi simulator
