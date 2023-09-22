@@ -136,7 +136,7 @@ Create a new Rust crate, which will be a library, inside `esp_rust_component` ca
 cargo init --lib rust_crate
 ```
 
-Update the `Cargo.toml` to match the settings for your target board. Also set the crate type to `staticlib`:
+Update the [`Cargo.toml`](./components/esp_rust_component/rust_crate/Cargo.toml) to match the settings for your target board. Also set the crate type to `staticlib`:
 
 ```toml
 [package]
@@ -155,7 +155,7 @@ default = [ ]
 
 ### Rust to C Interoperability
 
-Add a Rust function with C linkage in your `lib.rs` that will be callable from C code. An example might be:
+Add a Rust function with C linkage in your [`lib.rs`](./components/esp_rust_component/rust_crate/src/lib.rs) that will be callable from C code. An example might be:
 
 ```rust
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -179,7 +179,7 @@ pub extern "C" fn hello() -> *const c_void {
 
 ### Create a C Wrapper
 
-Create file `esp_rust_component/esp_rust_component.c` to include the Rust functions.
+Create file [`esp_rust_component/esp_rust_component.c`](./components/esp_rust_component/esp_rust_component.c) to include the Rust functions.
 
 ```c
 #include "rust_component.h"
@@ -187,7 +187,7 @@ Create file `esp_rust_component/esp_rust_component.c` to include the Rust functi
 
 ### Update the Header File
 
-Include the C header file in your `esp_rust_component/include/esp_rust_component.h`:
+Include the C header file in your [`esp_rust_component/include/esp_rust_component.h`](./components/esp_rust_component/include/esp_rust_component.h):
 
 ```c
 extern const void* hello();
@@ -195,7 +195,7 @@ extern const void* hello();
 
 ### Call Rust code from C
 
-Update main ESP-IDF project file `main/esp_idf_project.c`:
+Update main ESP-IDF project file [`main/esp_idf_project.c`](./main/esp_idf_project.c):
 
 ```c
 #include "stdio.h"
