@@ -15,7 +15,7 @@ else()
 endif()
 
 # Set the flags for cargo build
-set(CARGO_BUILD_FLAGS "-Zbuild-std=core")
+set(CARGO_BUILD_FLAGS "-Zbuild-std=core,panic_abort")
 
 # Set directories and target
 set(RUST_PROJECT_DIR "${CMAKE_CURRENT_LIST_DIR}/rust_crate")
@@ -32,7 +32,7 @@ ExternalProject_Add(
     BUILD_COMMAND ${CMAKE_COMMAND} -E env
         CARGO_BUILD_TARGET=${RUST_CARGO_TARGET}
         CARGO_BUILD_TARGET_DIR=${RUST_TARGET_DIR}
-        cargo ${RUST_CARGO_TOOLCHAIN} build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics
+        cargo ${RUST_CARGO_TOOLCHAIN} build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics,panic_immediate_abort
     BUILD_ALWAYS TRUE
     INSTALL_COMMAND ""
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
