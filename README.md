@@ -38,10 +38,10 @@ esp_idf_project/
 Key elements:
 - `esp_idf_project` contains main C code like any other ESP-IDF application.
 - The ESP-IDF componet with name `esp_rust_component` is stored in subdirectory with components.
-  - The `esp_rust_component` component contains C adapter layer which helps interfacing with Rust library.
+  - The `esp_rust_component` component contains C adapter layer, which helps interfacing with Rust library.
 - The Rust code is stored in `components/esp_rust_component/rust_crate` subdirectory.
 
-The component can be uploaded later on to [Component Manager](https://components.espressif.com/).
+The component can be uploaded later to [Component Manager](https://components.espressif.com/).
 
 ## Step-by-Step Guide
 
@@ -218,7 +218,7 @@ idf.py set-target <target>
 # idf.py set-target esp32-s3
 ```
 
-Optional step when developers needs to build Rust component also manually:
+Optional step when developers need to build Rust components manually:
 Define which toolchain should be used for the Rust component in file `esp_rust_component/rust_crate/rust-toolchain.toml`
 
 ```toml
@@ -252,7 +252,7 @@ This command will build, flash the resulting binary to your board and open a ser
 
 - [Install VS Code](https://code.visualstudio.com/download)
 - [Install Wokwi plugin](https://docs.wokwi.com/vscode/getting-started#installation)
-- Activate Wokwi plugin - command palette, search for `Wokwi: Start Simulator`, select and ativate the plugin using web browser
+- Activate Wokwi plugin - command palette, search for `Wokwi: Start Simulator`, select and activate the plugin using web browser
 
 ### Add files for Wokwi simulator
 
@@ -289,11 +289,11 @@ The plugin auto-reload application if the binary was updated.
 If you prefer starting the project from a template, you can use different methods:
 - `git`: Simply clone the repository and avoid generating and populating the different files
 - [cargo-generate](https://github.com/cargo-generate/cargo-generate) to get the project ready to build and flash!
-- [GitHub tempaltes](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
+- [GitHub templates](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
 
 ### `git`
 
-1. Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+1. Make sure that the [Prerequisites](#prerequisites) are met and that you have sourced the required export files.
 2. Clone the repository: `git clone https://github.com/georgik/esp32-idf-no-std-rust-component`
 3. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
 4. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
@@ -301,7 +301,7 @@ If you prefer starting the project from a template, you can use different method
 
 ### `cargo-generate`
 
-1. Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+1. Make sure that the [Prerequisites](#prerequisites) are met and that you have sourced the required export files.
 2. Install `cargo-generate`: `cargo install cargo-generate`
 3. Generate the template `cargo generate georgik/esp32-idf-no-std-rust-component`
 4. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
@@ -309,7 +309,7 @@ If you prefer starting the project from a template, you can use different method
 
 ### GitHub templates
 
-1. Make sure that the [Prerequisites](#prerequisites) are met, and that you have sourced the required export files.
+1. Make sure that the [Prerequisites](#prerequisites) are met and that you have sourced the required export files.
 2. [Create your own repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template#creating-a-repository-from-a-template) from [`georgik/esp32-idf-no-std-rust-component`](https://github.com/georgik/esp32-idf-no-std-rust-component)
    1. Above the file list, click Use this template.
    2. Select Create a new repository.
@@ -318,3 +318,58 @@ If you prefer starting the project from a template, you can use different method
 3. Clone the repository that you just created: `git clone https://github.com/<owner>/<repository>`
 4. [Set the target](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#select-target): `idf.py set-target <target>`
 5. [Build and flash the project](https://github.com/georgik/esp32-idf-no-std-rust-component?tab=readme-ov-file#build-the-project): `idf.py build flash monitor`
+
+## Adding GitHub Action tests
+
+If we want to add some CI to our project, we can leverage [Wokwi CI](https://docs.wokwi.com/wokwi-ci/getting-started), the following
+YAML file will build and check that the generated project runs properly:
+
+```yaml
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build-check:
+    name: ESP32 Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup | Rust
+        uses: esp-rs/xtensa-toolchain@v1.5
+        with:
+          default: true
+          buildtargets: esp32
+          ldproxy: false
+      - uses: Swatinem/rust-cache@v2
+      - name: Setup | ESP-IDF
+        shell: bash
+        run: |
+          git clone -b v5.1 --shallow-submodules --single-branch --recursive https://github.com/espressif/esp-idf.git /home/runner/work/esp-idf
+          /home/runner/work/esp-idf/install.sh esp32
+      - name: Build project
+        shell: bash
+        run: |
+          . /home/runner/work/esp-idf/export.sh
+          idf.py set-target esp32
+          idf.py build
+      - name: Wokwi CI check
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          timeout: 10000
+          expect_text: 'Hello ESP-RS. https://github.com/esp-rs'
+          fail_text: 'Error'
+```
+
+I'ts important to note that we need to set the `WOKWI_CLI_TOKEN` secret:
+1. [Create a Wokwi CI token](https://wokwi.com/dashboard/ci)
+2. [Add it as a secret in your GitHub repository](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)
+
+Also, the CI file needs to be modified if used for other targets.
