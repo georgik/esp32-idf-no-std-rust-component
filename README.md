@@ -334,30 +334,41 @@ on:
 env:
   CARGO_TERM_COLOR: always
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ESP_TARGET: esp32
+  ESP_IDF_VERSION: v5.1
+
 
 jobs:
   build-check:
-    name: ESP32 Checks
+    name: Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup | Rust
+      - name: Setup | Rust (RISC-V)
+        if: env.ESP_TARGET != 'esp32' && env.ESP_TARGET != 'esp32s2' && env.ESP_TARGET != 'esp32s3'
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imc-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+      - name: Setup | Rust (Xtensa)
+        if: env.ESP_TARGET == 'esp32' && env.ESP_TARGET == 'esp32s2' && env.ESP_TARGET == 'esp32s3'
         uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
-          buildtargets: esp32
+          buildtargets: {{ env.ESP_TARGET }}
           ldproxy: false
       - uses: Swatinem/rust-cache@v2
       - name: Setup | ESP-IDF
         shell: bash
         run: |
-          git clone -b v5.1 --shallow-submodules --single-branch --recursive https://github.com/espressif/esp-idf.git /home/runner/work/esp-idf
-          /home/runner/work/esp-idf/install.sh esp32
+          git clone -b {{ env.ESP_IDF_VERSION }} --shallow-submodules --single-branch --recursive https://github.com/espressif/esp-idf.git /home/runner/work/esp-idf
+          /home/runner/work/esp-idf/install.sh  {{ env.ESP_TARGET }}
       - name: Build project
         shell: bash
         run: |
           . /home/runner/work/esp-idf/export.sh
-          idf.py set-target esp32
+          idf.py set-target  {{ env.ESP_TARGET }}
           idf.py build
       - name: Wokwi CI check
         uses: wokwi/wokwi-ci-action@v1
