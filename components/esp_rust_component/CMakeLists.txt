@@ -21,7 +21,8 @@ set(CARGO_BUILD_FLAGS "-Zbuild-std=core,panic_abort")
 set(RUST_PROJECT_DIR "${CMAKE_CURRENT_LIST_DIR}/rust_crate")
 set(RUST_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 set(RUST_TARGET_DIR "${RUST_BUILD_DIR}/target")
-set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${RUST_CARGO_TARGET}/release/librust_crate.a")
+set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${RUST_CARGO_TARGET}/debug/librust_crate.a")
+# set(RUST_STATIC_LIBRARY "${RUST_TARGET_DIR}/${RUST_CARGO_TARGET}/release/librust_crate.a")
 
 # ExternalProject_Add for building the Rust project
 ExternalProject_Add(
@@ -32,7 +33,8 @@ ExternalProject_Add(
     BUILD_COMMAND ${CMAKE_COMMAND} -E env
         CARGO_BUILD_TARGET=${RUST_CARGO_TARGET}
         CARGO_BUILD_TARGET_DIR=${RUST_TARGET_DIR}
-        cargo ${RUST_CARGO_TOOLCHAIN} build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics,panic_immediate_abort
+        cargo ${RUST_CARGO_TOOLCHAIN} build ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics,panic_immediate_abort
+        # cargo ${RUST_CARGO_TOOLCHAIN} build --release ${CARGO_BUILD_FLAGS} -Zbuild-std-features=compiler-builtins-weak-intrinsics,panic_immediate_abort
     BUILD_ALWAYS TRUE
     INSTALL_COMMAND ""
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
