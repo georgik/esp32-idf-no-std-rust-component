@@ -43,11 +43,77 @@ unsafe impl GlobalAlloc for Esp32Alloc {
 }
 
 use nmea::{Nmea, SentenceType};
+use heapless::Deque;
+use heapless::Vec;
+use nmea::Satellite;
+
+struct SatsPack {
+    /// max number of visible GNSS satellites per hemisphere, assuming global coverage
+    /// GPS: 16
+    /// GLONASS: 12
+    /// BeiDou: 12 + 3 IGSO + 3 GEO
+    /// Galileo: 12
+    /// => 58 total Satellites => max 15 rows of data
+    #[cfg_attr(feature = "serde", serde(with = "serde_deq"))]
+    data: Deque<Vec<Option<Satellite>, 4>, 15>,
+    max_len: usize,
+}
+
+    /// Supported GNSS types
+    enum GnssType {
+        /// BeiDou Navigation Satellite System (BDS) from China.
+        Beidou,
+        /// European Global Navigation System (Galileo) from Europe.
+        Galileo,
+        /// Global Positioning System (GPS) from the United States.
+        Gps,
+        /// Globalnaya Navigazionnaya Sputnikovaya Sistema (GLONASS) from Russia.
+        Glonass,
+        /// Navigation Indian Constellation (NavIC) from India.
+        NavIC,
+        /// Quasi-Zenith Satellite System (QZSS) from Japan.
+        Qzss,
+    }
+
 static mut BUFFER: [u8; 128] = [0; 128];
+use nmea::SentenceMask;
 #[no_mangle]
 pub extern "C" fn nmea_gga() -> *const c_void {
+
+    //let data: Deque<Vec<Option<Satellite>, 40>, 150> = Deque::new();
+    // let sp = SatsPack {
+    //     data,
+    //     max_len: 15,
+    // };
     // let mut nmea = Nmea::default();
     let sentence = [SentenceType::RMC, SentenceType::GGA];
+    // let satellites_scan: [SatsPack; 6] = [
+    //     SatsPack {
+    //         data: Deque::new(),
+    //         max_len: 15,
+    //     },
+    //     SatsPack {
+    //         data: Deque::new(),
+    //         max_len: 15,
+    //     },
+    //     SatsPack {
+    //         data: Deque::new(),
+    //         max_len: 15,
+    //     },
+    //     SatsPack {
+    //         data: Deque::new(),
+    //         max_len: 15,
+    //     },
+    //     SatsPack {
+    //         data: Deque::new(),
+    //         max_len: 15,
+    //     },
+    //     SatsPack {
+    //         data: Deque::new(),
+    //         max_len: 15,
+    //     },
+    // ];
+    let required_sentences_for_nav: SentenceMask ;
     let mut nmea = Nmea::create_for_navigation(&sentence).unwrap();
     let gga = "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76";
     // unsafe {

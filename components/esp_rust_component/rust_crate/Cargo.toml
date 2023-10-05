@@ -7,7 +7,13 @@ edition = "2021"
 crate-type = ["staticlib"]
 
 [dependencies]
-nmea = { version = "0.6.0", default-features=false, features = ["GNSS"] }
+# nmea = { version = "0.6.0", default-features=false, features = ["GNSS"] }
+nmea = { path = "../../../../nmea", default-features=false, features = ["GNSS"] }
+# chrono = { version = "*", default-features = false, features = ["rkyv"] }
+esp-alloc = "0.3.0"
+heapless = "0.7.16"
+# hal = { package = "esp32-hal", version = "0.15.0"  }
+# critical-section = "1.1.2"
 
 [features]
 default = [ ]
