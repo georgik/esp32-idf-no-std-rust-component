@@ -77,6 +77,15 @@ struct SatsPack {
 
 static mut BUFFER: [u8; 128] = [0; 128];
 use nmea::SentenceMask;
+use core::mem::size_of;
+// use esp_println::println;
+
+#[no_mangle]
+pub extern "C" fn nmea_size() -> u32 {
+    let size = core::mem::size_of::<SatsPack>();
+    size as u32
+}
+
 #[no_mangle]
 pub extern "C" fn nmea_gga() -> *const c_void {
 
@@ -87,7 +96,9 @@ pub extern "C" fn nmea_gga() -> *const c_void {
     // };
     // let mut nmea = Nmea::default();
     let sentence = [SentenceType::RMC, SentenceType::GGA];
-    // let satellites_scan: [SatsPack; 6] = [
+    // let satellites_scan: [SatsPack; 6];
+    // println!("{}", size_of::<SatsPack>());
+    // = [
     //     SatsPack {
     //         data: Deque::new(),
     //         max_len: 15,

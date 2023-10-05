@@ -11,6 +11,8 @@ void app_main() {
     const char* message = hello();
     printf("MSG1: %s\n", message);
 
+    printf("size: %lu\n", nmea_size());
+
 remaining_stack = uxTaskGetStackHighWaterMark(NULL);
     printf("Remaining stack space before calling Rust function: %u\n", remaining_stack);
     const char* message2 = nmea_gga();
