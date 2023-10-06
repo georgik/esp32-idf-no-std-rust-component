@@ -96,34 +96,6 @@ pub extern "C" fn nmea_gga() -> *const c_void {
     // };
     // let mut nmea = Nmea::default();
     let sentence = [SentenceType::RMC, SentenceType::GGA];
-    // let satellites_scan: [SatsPack; 6];
-    // println!("{}", size_of::<SatsPack>());
-    // = [
-    //     SatsPack {
-    //         data: Deque::new(),
-    //         max_len: 15,
-    //     },
-    //     SatsPack {
-    //         data: Deque::new(),
-    //         max_len: 15,
-    //     },
-    //     SatsPack {
-    //         data: Deque::new(),
-    //         max_len: 15,
-    //     },
-    //     SatsPack {
-    //         data: Deque::new(),
-    //         max_len: 15,
-    //     },
-    //     SatsPack {
-    //         data: Deque::new(),
-    //         max_len: 15,
-    //     },
-    //     SatsPack {
-    //         data: Deque::new(),
-    //         max_len: 15,
-    //     },
-    // ];
     let required_sentences_for_nav: SentenceMask ;
     let mut nmea = Nmea::create_for_navigation(&sentence).unwrap();
     let gga = "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76";
@@ -132,19 +104,19 @@ pub extern "C" fn nmea_gga() -> *const c_void {
     //     BUFFER[1] = 0;
     // };
     // return unsafe { BUFFER.as_ptr() as *const c_void };
-    // let sentence_type = match nmea.parse(gga) {
-    //     Ok(result) => result,
-    //     Err(_) => { 
-    //         unsafe {
-    //             BUFFER[0] = 46;
-    //             BUFFER[1] = 0;
-    //         };
-    //         return unsafe { BUFFER.as_ptr() as *const c_void };
-    //     },
-    // };
-    // let sentence_string = sentence_type.as_str();
-    // let result = nmea.parse(gga).unwrap();
-    // let first_char = result.as_str().chars().next().unwrap();
+    let sentence_type = match nmea.parse(gga) {
+        Ok(result) => result,
+        Err(_) => { 
+            unsafe {
+                BUFFER[0] = 46;
+                BUFFER[1] = 0;
+            };
+            return unsafe { BUFFER.as_ptr() as *const c_void };
+        },
+    };
+    let sentence_string = sentence_type.as_str();
+    let result = nmea.parse(gga).unwrap();
+    let first_char = result.as_str().chars().next().unwrap();
     unsafe {
         // BUFFER[0] = first_char as u8;
         BUFFER[0] = 45;
