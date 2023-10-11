@@ -1,6 +1,6 @@
+
+#include <stdio.h>
 extern const void* hello();
 
-extern const void* nmea_gga();
-#include <stdio.h>
-
 extern uint32_t nmea_size();
+extern float nmea_gga_altitude(const char* gga_str);

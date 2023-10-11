@@ -1,8 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use core::ffi::c_void;
+use core::ffi::{c_void, c_char, CStr};
 use core::panic::PanicInfo;
-
 
 use nmea::{Nmea, ParseResult};
 
@@ -22,27 +21,28 @@ pub extern "C" fn nmea_size() -> u32 {
 }
 
 #[no_mangle]
-pub extern "C" fn nmea_gga() -> *const c_void {
-    let gga = "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76";
-    let result = nmea::parse_str(gga).unwrap();
-    let first_char = match result {
-        ParseResult::GGA(gga) => {
-            unsafe {
-                BUFFER[0] = 46;
-                BUFFER[1] = 0;
-            };
-            return unsafe { BUFFER.as_ptr() as *const c_void };
-        }
-        _ => todo!()
-    };
-    unsafe {
-        BUFFER[0] = 45;
-        BUFFER[1] = 0;
+pub extern "C" fn nmea_gga_altitude(gga_cstr: *const c_char) -> f32 {
+    if gga_cstr.is_null() {
+        return 0.0;
     }
-    unsafe { BUFFER.as_ptr() as *const c_void }
+
+    let c_str = unsafe { CStr::from_ptr(gga_cstr) };
+    let gga_str = match c_str.to_str() {
+        Ok(s) => s,
+        Err(_) => return 0.0,
+    };
+    match nmea::parse_str(gga_str) {
+        Ok(result) => {
+            match result {
+                ParseResult::GGA(gga) => gga.altitude.unwrap_or(0.0),
+                _ => 0.0
+            }
+        },
+        Err(_) => 0.0
+    }
 }
 
-static HELLO_ESP32: &'static [u8] = b"Hello2 ESP-RS. https://github.com/esp-rs\0";
+static HELLO_ESP32: &'static [u8] = b"Hello ESP-RS. https://github.com/esp-rs\0";
 
 #[no_mangle]
 pub extern "C" fn hello() -> *const c_void {
