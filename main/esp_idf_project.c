@@ -6,54 +6,43 @@
 
 #include <math.h>
 
-void print_gga_data(struct CGgaData c_gga_data) {
-    if (!isnan(c_gga_data.latitude)) {
-        double lat_deg = floor(c_gga_data.latitude);
-        double lat_min = (c_gga_data.latitude - lat_deg) * 60.0;
-        printf("- Latitude: %.0f°%.4f' N\n", lat_deg, lat_min);
-    } else {
-        printf("- Latitude: N/A\n");
-    }
 
-    if (!isnan(c_gga_data.longitude)) {
-        double lon_deg = floor(c_gga_data.longitude);
-        double lon_min = (c_gga_data.longitude - lon_deg) * 60.0;
-        printf("- Longitude: %.0f°%.4f' W\n", lon_deg, lon_min);
+void print_optional_double(const char* label, double value, const char* unit) {
+    if (!isnan(value)) {
+        printf("- %s: %.1f %s\n", label, value, unit);
     } else {
-        printf("- Longitude: N/A\n");
-    }
-
-    if (c_gga_data.fix_type != -1) {
-        printf("- GPS Quality: %d (GPS fix)\n", c_gga_data.fix_type);
-    } else {
-        printf("- GPS Quality: N/A\n");
-    }
-
-    if (c_gga_data.fix_satellites != -1) {
-        printf("- Number of Satellites: %d\n", c_gga_data.fix_satellites);
-    } else {
-        printf("- Number of Satellites: N/A\n");
-    }
-
-    if (!isnan(c_gga_data.hdop)) {
-        printf("- Horizontal Dilution of Precision: %.1f\n", c_gga_data.hdop);
-    } else {
-        printf("- Horizontal Dilution of Precision: N/A\n");
-    }
-
-    if (!isnan(c_gga_data.altitude)) {
-        printf("- Altitude: %.1f Meters\n", c_gga_data.altitude);
-    } else {
-        printf("- Altitude: N/A\n");
-    }
-
-    if (!isnan(c_gga_data.geoid_separation)) {
-        printf("- Height of Geoid above WGS84 Ellipsoid: %.1f Meters\n", c_gga_data.geoid_separation);
-    } else {
-        printf("- Height of Geoid above WGS84 Ellipsoid: N/A\n");
+        printf("- %s: N/A\n", label);
     }
 }
 
+void print_optional_coord(const char* label, double coord, const char* dir) {
+    if (!isnan(coord)) {
+        double deg = floor(coord);
+        double min = (coord - deg) * 60.0;
+        printf("- %s: %.0f°%.4f' %s\n", label, deg, min, dir);
+    } else {
+        printf("- %s: N/A\n", label);
+    }
+}
+
+void print_optional_int(const char* label, int value, const char* unit) {
+    if (value != -1) {
+        printf("- %s: %d %s\n", label, value, unit);
+    } else {
+        printf("- %s: N/A\n", label);
+    }
+}
+
+void print_gga_data(struct CGgaData c_gga_data) {
+    printf("GGA Data:\n");
+    print_optional_coord("Latitude", c_gga_data.latitude, "N");
+    print_optional_coord("Longitude", c_gga_data.longitude, "W");
+    print_optional_int("GPS Quality", c_gga_data.fix_type, "(GPS fix)");
+    print_optional_int("Number of Satellites", c_gga_data.fix_satellites, "");
+    print_optional_double("Horizontal Dilution of Precision", c_gga_data.hdop, "");
+    print_optional_double("Altitude", c_gga_data.altitude, "Meters");
+    print_optional_double("Height of Geoid above WGS84 Ellipsoid", c_gga_data.geoid_separation, "Meters");
+}
 
 void nmea_gga_task(void* param) {
     UBaseType_t remaining_stack = uxTaskGetStackHighWaterMark(NULL);
