@@ -9,12 +9,12 @@ void nmea_gga_task(void* param) {
     printf("Remaining stack space before calling Rust function in nmea_gga_task: %u\n", remaining_stack);
 
     const char* message2 = nmea_gga();
-    printf("MSG2: %s\n", message2);
+    printf("NMEA message: %s\n", message2);
 
     remaining_stack = uxTaskGetStackHighWaterMark(NULL);
     printf("Remaining stack space after calling Rust function in nmea_gga_task: %u\n", remaining_stack);
 
-    vTaskDelete(NULL); // Delete this task when done
+    vTaskDelete(NULL);
 }
 
 void app_main() {
@@ -22,9 +22,9 @@ void app_main() {
     printf("Remaining stack space before calling Rust function in app_main: %u\n", remaining_stack);
 
     const char* message = hello();
-    printf("MSG1: %s\n", message);
+    printf("Message from Rust: %s\n", message);
 
-    printf("size: %lu\n", nmea_size());
+    printf("Size of NMEA: %lu\n", nmea_size());
 
     remaining_stack = uxTaskGetStackHighWaterMark(NULL);
     printf("Remaining stack space after calling Rust function in app_main: %u\n", remaining_stack);
