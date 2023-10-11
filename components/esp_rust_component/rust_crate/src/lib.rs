@@ -4,7 +4,7 @@ use core::ffi::c_void;
 use core::panic::PanicInfo;
 
 
-use nmea::{Nmea, SentenceType, ParseResult};
+use nmea::{Nmea, ParseResult};
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -21,19 +21,8 @@ pub extern "C" fn nmea_size() -> u32 {
     size as u32
 }
 
-#[panic_handler]
-fn my_panic(_info: &core::panic::PanicInfo) -> ! {
-    loop {}
-}
-
-use core::sync::atomic::{AtomicBool, Ordering};
-
 #[no_mangle]
 pub extern "C" fn nmea_gga() -> *const c_void {
-
-
-    let sentence = [SentenceType::RMC, SentenceType::GGA];
-    let required_sentences_for_nav: SentenceMask ;
     let gga = "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76";
     let result = nmea::parse_str(gga).unwrap();
     let first_char = match result {
@@ -46,9 +35,7 @@ pub extern "C" fn nmea_gga() -> *const c_void {
         }
         _ => todo!()
     };
-    //let first_char = result.as_str().as_bytes()[0];
     unsafe {
-        BUFFER[0] = first_char as u8;
         BUFFER[0] = 45;
         BUFFER[1] = 0;
     }
