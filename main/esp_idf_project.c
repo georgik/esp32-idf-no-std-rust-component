@@ -30,5 +30,5 @@ void app_main() {
     printf("Remaining stack space after calling Rust function in app_main: %u\n", remaining_stack);
 
     // Create a new task for running nmea_gga with a 10KB stack
-    xTaskCreate(nmea_gga_task, "nmea_gga_task", 50240, NULL, 5, NULL);
+    xTaskCreate(nmea_gga_task, "nmea_gga_task", 10240, NULL, 5, NULL);
 }
