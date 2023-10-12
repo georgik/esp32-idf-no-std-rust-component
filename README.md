@@ -68,6 +68,12 @@ cd components
 idf.py create-component esp_rust_component
 ```
 
+If you've decided to create *new* component manually make sure to run, so that CMake will pick newly created component:
+
+```
+idf.py reconfigure
+```
+
 ### Set up the CMakeLists.txt File
 
 In your `esp_rust_component` directory, edit the [`CMakeLists.txt`](./components/esp_rust_component/CMakeLists.txt) file with the following content:
